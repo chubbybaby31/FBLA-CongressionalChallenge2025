@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Current Balance: ${{ "%.2f"|format(balance) }}</h1>
+    <h1 id="current-balance">Current Balance: ${{ "%.2f"|format(balance) }}</h1>
     <h2>Recent Transactions</h2>
     <table class="table">
         <thead>
@@ -9,17 +9,161 @@
                 <th>Amount</th>
                 <th>Category</th>
                 <th>Type</th>
+                <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            {% for transaction in transactions[-5:] %}
-                <tr>
-                    <td>{{ transaction.date }}</td>
-                    <td>${{ "%.2f"|format(transaction.amount) }}</td>
-                    <td>{{ transaction.category }}</td>
-                    <td>{{ transaction.type }}</td>
-                </tr>
+        <tbody id="transactions-table">
+            {% for transaction in transactions %}
+            <tr id="transaction-{{ transaction.id }}">
+                <td>{{ transaction.date }}</td>
+                <td>${{ "%.2f"|format(transaction.amount) }}</td>
+                <td>{{ transaction.category }}</td>
+                <td>{{ transaction.type }}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary edit-transaction" data-id="{{ transaction.id }}">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-transaction" data-id="{{ transaction.id }}">Delete</button>
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Edit Transaction Modal -->
+    <div class="modal fade" id="editTransactionModal" tabindex="-1" role="dialog" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTransactionModalLabel">Edit Transaction</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTransactionForm">
+                        <input type="hidden" id="editTransactionId">
+                        <div class="form-group">
+                            <label for="editDate">Date</label>
+                            <input type="date" class="form-control" id="editDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAmount">Amount</label>
+                            <input type="number" step="0.01" class="form-control" id="editAmount" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCategory">Category</label>
+                            <input type="text" class="form-control" id="editCategory" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editType">Type</label>
+                            <select class="form-control" id="editType" required>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveEditTransaction">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delete transaction functionality
+            document.querySelectorAll('.delete-transaction').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionId = this.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this transaction?')) {
+                        fetch(`/delete_transaction/${transactionId}`, { 
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const row = document.getElementById(`transaction-${transactionId}`);
+                                if (row) {
+                                    row.remove();
+                                    console.log('Transaction deleted successfully');
+                                    
+                                    // Update the balance display
+                                    const balanceElement = document.getElementById('current-balance');
+                                    if (balanceElement && data.new_balance !== undefined) {
+                                        balanceElement.textContent = `Current Balance: $${data.new_balance.toFixed(2)}`;
+                                    }
+                                } else {
+                                    console.log('Transaction row not found in DOM');
+                                }
+                            } else {
+                                console.error('Server reported failure:', data.error);
+                                alert('Failed to delete transaction: ' + (data.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        })
+                        .finally(() => {
+                            // Refresh the page to ensure consistency
+                            location.reload();
+                        });
+                    }
+                });
+            });
+        });
+        // Edit transaction functionality
+        document.querySelectorAll('.edit-transaction').forEach(button => {
+            button.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                const row = document.getElementById(`transaction-${transactionId}`);
+                const cells = row.getElementsByTagName('td');
+
+                document.getElementById('editTransactionId').value = transactionId;
+                document.getElementById('editDate').value = cells[0].textContent;
+                document.getElementById('editAmount').value = cells[1].textContent.replace('$', '');
+                document.getElementById('editCategory').value = cells[2].textContent;
+                document.getElementById('editType').value = cells[3].textContent.toLowerCase();
+
+                $('#editTransactionModal').modal('show');
+            });
+        });
+
+        document.getElementById('saveEditTransaction').addEventListener('click', function() {
+            const transactionId = document.getElementById('editTransactionId').value;
+            const editedTransaction = {
+                date: document.getElementById('editDate').value,
+                amount: parseFloat(document.getElementById('editAmount').value),
+                category: document.getElementById('editCategory').value,
+                type: document.getElementById('editType').value
+            };
+
+            fetch(`/edit_transaction/${transactionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editedTransaction)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#editTransactionModal').modal('hide');
+                    location.reload(); // Reload to reflect changes
+                } else {
+                    console.error('Error editing transaction:', data.error);
+                    alert('Failed to edit transaction: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while editing the transaction. Please try again.');
+            });
+        });
+    </script>
+
+    <!-- Add other content here -->
 {% endblock %}

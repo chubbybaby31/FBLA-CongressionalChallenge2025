@@ -1,7 +1,81 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Financial Summary</h1>
-    <p>Total Income: ${{ "%.2f"|format(total_income) }}</p>
-    <p>Total Expenses: ${{ "%.2f"|format(total_expenses) }}</p>
-    <p>Net: ${{ "%.2f"|format(total_income - total_expenses) }}</p>
+    
+    <!-- Date Range Selector -->
+    <form method="GET" action="{{ url_for('summary') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-5">
+                <label for="start_date">Start Date:</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+            </div>
+            <div class="col-md-5">
+                <label for="end_date">End Date:</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+            </div>
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h3>Overview</h3>
+            <p>Total Income: ${{ "%.2f"|format(total_income) }}</p>
+            <p>Total Expenses: ${{ "%.2f"|format(total_expenses) }}</p>
+            <p>Net: ${{ "%.2f"|format(net) }}</p>
+        </div>
+        <div class="col-md-8">
+            {% if not income_pie_data and not expenses_pie_data %}
+                <div class="alert alert-info">No transactions found for the selected date range.</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div id="income-pie"></div>
+        </div>
+        <div class="col-md-6">
+            <div id="expenses-pie"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        // Safely parse JSON or return null if invalid
+        function safeJSONParse(str) {
+            try {
+                return JSON.parse(str);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                return null;
+            }
+        }
+
+        // Raw data from server
+        var rawIncomePieData = '{{ income_pie_data | safe }}';
+        var rawExpensesPieData = '{{ expenses_pie_data | safe }}';
+
+        // Parse the data
+        var incomePieData = safeJSONParse(rawIncomePieData);
+        var expensesPieData = safeJSONParse(rawExpensesPieData);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render Income Pie Chart
+            if (incomePieData && incomePieData.data && incomePieData.data[0]) {
+                Plotly.newPlot('income-pie', incomePieData.data, incomePieData.layout || {});
+            } else {
+                console.log('No income data available for pie chart');
+            }
+
+            // Render Expenses Pie Chart
+            if (expensesPieData && expensesPieData.data && expensesPieData.data[0]) {
+                Plotly.newPlot('expenses-pie', expensesPieData.data, expensesPieData.layout || {});
+            } else {
+                console.log('No expenses data available for pie chart');
+            }
+        });
+    </script>
 {% endblock %}
