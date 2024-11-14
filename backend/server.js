@@ -2,12 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs').promises;
 const path = require('path');
+const cors = require('cors'); // Add this line
 
 const app = express();
 const PORT = 3001;
 const DATA_FILE = path.join(__dirname, 'financial_data.txt');
 
 app.use(bodyParser.json());
+app.use(cors()); // Add this line to enable CORS for all routes
 
 // Initialize data structure
 let financialData = {

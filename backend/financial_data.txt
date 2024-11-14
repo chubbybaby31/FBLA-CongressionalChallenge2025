@@ -20,6 +20,6 @@
       "description": "Utilities",
       "type": "expense",
       "date": "2024-10-05T12:00:00Z"
-    }
+    },
   ]
 }
