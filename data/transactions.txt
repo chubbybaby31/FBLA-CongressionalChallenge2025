@@ -1,0 +1,2 @@
+2024-11-13,100.0,walking dog,income
+2024-11-13,40.0,joes,expense

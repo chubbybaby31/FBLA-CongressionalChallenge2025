@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Financial Summary</h1>
+    <p>Total Income: ${{ "%.2f"|format(total_income) }}</p>
+    <p>Total Expenses: ${{ "%.2f"|format(total_expenses) }}</p>
+    <p>Net: ${{ "%.2f"|format(total_income - total_expenses) }}</p>
+{% endblock %}
