@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Application Instructions</h2>
+
+<div class="instructions">
+    <h3>Welcome to Your Financial Tracker!</h3>
+    <p>This application helps you manage your finances by tracking income and expenses. Below are instructions on how to use the various features:</p>
+
+    <h4>1. Home Screen</h4>
+    <p>Upon logging in, you will see your current balance and a summary of your transactions. You can navigate to different sections using the menu.</p>
+
+    <h4>2. Adding a Transaction</h4>
+    <p>To add a transaction:</p>
+    <ol>
+        <li>Click on the "Add Transaction" link from the menu.</li>
+        <li>Fill out the form with the date, amount, category, and type (income or expense).</li>
+        <li>Click "Submit" to save the transaction.</li>
+    </ol>
+
+    <h4>3. Viewing Summary</h4>
+    <p>To view a summary of your transactions:</p>
+    <ol>
+        <li>Select "Summary" from the menu.</li>
+        <li>You can filter transactions by date range to analyze your spending habits.</li>
+    </ol>
+
+    <h4>4. Searching Transactions</h4>
+    <p>If you want to find specific transactions:</p>
+    <ol>
+        <li>Go to the "Search" section.</li>
+        <li>Enter a keyword related to the transaction category and click "Search".</li>
+    </ol>
+
+    <h4>5. Deleting Transactions</h4>
+    <p>You can remove transactions if needed:</p>
+    <ol>
+        <li>Navigate to your transaction list.</li>
+        <li>Click on the delete button next to the transaction you wish to remove.</li>
+        <li>The balance will be updated accordingly.</li>
+    </ol>
+
+    <h4>6. Chatbot Assistance</h4>
+    <p>If you need help or advice, use our Budget Buddy Chat:</p>
+    <ol>
+        <li>Select "Budget Buddy Chat" from the menu.</li>
+        <li>Type your question or request in the input box and hit "Send".</li>
+        <li>The chatbot will provide responses based on your financial data.</li>
+    </ol>
+
+    <h3>Tips for Effective Use</h3>
+    <ul>
+        <li>Regularly update your transactions for accurate tracking.</li>
+        <li>Review your spending habits monthly using the summary feature.</li>
+        <li>Utilize the chatbot for personalized financial advice based on your trends.</li>
+    </ul>
+
+    <p>If you have any questions or need further assistance, feel free to reach out!</p>
+</div>
+
+<style>
+.instructions {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.instructions h3 {
+    margin-top: 20px;
+}
+.instructions p, .instructions li {
+    line-height: 1.6;
+}
+</style>
+
+{% endblock %}
