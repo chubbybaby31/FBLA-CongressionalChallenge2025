@@ -174,13 +174,13 @@ def summary():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
-    if request.method == 'POST':
-        keyword = request.form['keyword']
-        transactions = read_transactions()
-        filtered_transactions = [t for t in transactions if keyword.lower() in t['category'].lower()]
-        return render_template('search_results.html', transactions=filtered_transactions)
-    
-    return render_template('search.html')
+    keyword = request.args.get('keyword', '')
+    transactions = []
+    if keyword:
+        all_transactions = read_transactions()
+        transactions = [t for t in all_transactions if keyword.lower() in t['category'].lower()]
+    return render_template('search_results.html', transactions=transactions, keyword=keyword)
+
 
 @app.route('/delete_transaction/<int:transaction_id>', methods=['POST'])
 def delete_transaction(transaction_id):

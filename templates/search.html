@@ -1,11 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>Search Transactions</h1>
-    <form method="POST">
+    <form action="{{ url_for('search') }}" method="GET">
         <div class="form-group">
             <label for="keyword">Search Keyword:</label>
-            <input type="text" class="form-control" id="keyword" name="keyword" required>
+            <input type="text" class="form-control" id="keyword" name="keyword" value="{{ keyword }}" required>
         </div>
         <button type="submit" class="btn btn-primary">Search</button>
     </form>
+
+    {% if transactions is defined %}
+        {% if transactions %}
+            <h2>Search Results</h2>
+            <ul>
+            {% for transaction in transactions %}
+                <li>{{ transaction.date }} - {{ transaction.amount }} - {{ transaction.category }} - {{ transaction.type }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No results found.</p>
+        {% endif %}
+    {% endif %}
 {% endblock %}
