@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import plotly
 import plotly.express as px
@@ -270,15 +270,59 @@ model = genai.GenerativeModel('gemini-pro')
 
 # ... (keep all the existing code)
 
+def format_response(response_text):
+    # Replace **text** with <strong>text</strong> for bold
+    formatted_text = response_text.replace('*', '<strong>')
+    formatted_text = formatted_text.replace('<strong>', '<strong>', 1).replace('</strong>', '</strong>', 1)
+    
+    # Split paragraphs by double newlines and wrap them in <p> tags
+    paragraphs = formatted_text.split('\n\n')
+    formatted_paragraphs = ''.join(f'<p>{para.strip()}</p>' for para in paragraphs if para.strip())
+    
+    return formatted_paragraphs
+
 @app.route('/chatbot', methods=['GET', 'POST'])
 def chatbot():
     if request.method == 'POST':
         user_input = request.form['user_input']
         
-        # Generate response using Gemini API
-        response = model.generate_content(user_input)
+        # Get client's financial information
+        balance = read_balance()
+        transactions = read_transactions()
         
-        return jsonify({'response': response.text})
+        # Convert transactions to a DataFrame for easier analysis
+        df = pd.DataFrame(transactions)
+        df['date'] = pd.to_datetime(df['date'])
+        df['amount'] = df['amount'].astype(float)
+        
+        # Calculate recent trends (last 30 days)
+        today = datetime.now()
+        last_30_days = today - timedelta(days=30)
+        recent_df = df[df['date'] > last_30_days]
+        
+        total_income = recent_df[recent_df['type'] == 'income']['amount'].sum()
+        total_expenses = recent_df[recent_df['type'] == 'expense']['amount'].sum()
+        top_expense_categories = recent_df[recent_df['type'] == 'expense'].groupby('category')['amount'].sum().nlargest(3)
+        
+        # Prepare context for the chatbot
+        context = f"""
+        Current balance: **${balance:.2f}**
+        Recent income (last 30 days): **${total_income:.2f}**
+        Recent expenses (last 30 days): **${total_expenses:.2f}**
+        Top 3 expense categories (last 30 days):
+        {top_expense_categories.to_string()}
+        
+        Based on this information, provide financial advice and answer the following user query:
+        {user_input}
+        """
+        
+        # Generate response using Gemini API
+        response = model.generate_content(context)
+        
+        # Format the response text for HTML output
+        formatted_response = format_response(response.text)
+        
+        return jsonify({'response': formatted_response})
     
     return render_template('chatbot.html')
 
