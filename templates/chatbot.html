@@ -10,57 +10,57 @@
 </div>
 
 <script>
-    // Load existing chat messages from session storage
-    function loadChatHistory() {
-        const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
-        chatMessages.forEach(message => {
-            addMessage(message.sender, message.text);
-        });
-    }
-    
-    // Save chat message to session storage
-    function saveChatMessage(sender, message) {
-        const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
-        chatMessages.push({ sender: sender, text: message });
-        sessionStorage.setItem('chatMessages', JSON.stringify(chatMessages));
-    }
-    
-    document.getElementById('chat-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var userInput = document.getElementById('user-input').value;
-        addMessage('You', userInput);
-        saveChatMessage('You', userInput); // Save user message
-        
-        fetch('/chatbot', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'user_input=' + encodeURIComponent(userInput)
-        })
-        .then(response => response.json())
-        .then(data => {
-            addMessage('AI', data.response);
-            saveChatMessage('AI', data.response); // Save AI response
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    
-        document.getElementById('user-input').value = '';
+// Load existing chat messages from local storage
+function loadChatHistory() {
+    const chatMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+    chatMessages.forEach(message => {
+        addMessage(message.sender, message.text);
     });
+}
+
+// Save chat message to local storage
+function saveChatMessage(sender, message) {
+    const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
+    chatMessages.push({ sender: sender, text: message });
+    localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+}
+
+document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var userInput = document.getElementById('user-input').value;
+    addMessage('You', userInput);
+    saveChatMessage('You', userInput); // Save user message
     
-    // Function to add messages to the chat
-    function addMessage(sender, message) {
-        var chatMessages = document.getElementById('chat-messages');
-        var messageElement = document.createElement('div'); // Changed to div for better formatting
-        messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + message;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
-    }
-    
-    // Load chat history when the page loads
-    loadChatHistory();
+    fetch('/chatbot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'user_input=' + encodeURIComponent(userInput)
+    })
+    .then(response => response.json())
+    .then(data => {
+        addMessage('AI', data.response);
+        saveChatMessage('AI', data.response); // Save AI response
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+
+    document.getElementById('user-input').value = '';
+});
+
+// Function to add messages to the chat
+function addMessage(sender, message) {
+    var chatMessages = document.getElementById('chat-messages');
+    var messageElement = document.createElement('div'); // Changed to div for better formatting
+    messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + message;
+    chatMessages.appendChild(messageElement);
+    chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
+}
+
+// Load chat history when the page loads
+loadChatHistory();
 </script>
 
 <style>
