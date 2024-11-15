@@ -410,3 +410,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     height: 24px;
     border-width: thin;
 }
+
+#filter-button {
+    margin-top: 1%;
+}
