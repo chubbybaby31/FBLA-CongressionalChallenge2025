@@ -312,7 +312,7 @@ def chatbot():
         Top 3 expense categories (last 30 days):
         {top_expense_categories.to_string()}
         
-        Based on this information, provide financial advice and answer the following user query:
+        Based on this information, answer the following user query:
         {user_input}
         """
         
