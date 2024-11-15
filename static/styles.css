@@ -193,3 +193,57 @@ tr:hover {
     display: none !important;
 }
 
+/* Modal styles */
+.modal-content {
+    padding: 20px;
+}
+
+/* Modal input and select styles */
+.modal input[type="text"],
+.modal input[type="number"],
+.modal input[type="date"],
+.modal select {
+    width: 100%;
+    padding: 8px; /* Reduced padding */
+    border-radius: 6px; /* Slightly reduced border radius */
+    border: 1px solid #e0e0e0; /* Thinner border */
+    font-size: 1rem;
+    color: #333;
+    box-sizing: border-box; /* Ensures padding is included in width */
+}
+
+.modal select {
+    font-size: 1rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position-x: 95%;
+    background-position-y: 50%;
+    padding-right: 30px; /* Space for custom dropdown arrow */
+}
+
+.modal label {
+    font-size: 0.9rem;
+    margin-bottom: 4px; /* Reduced margin */
+    color: #4CAF50;
+    display: block; /* Ensures label is on its own line */
+}
+
+.modal .form-group {
+    margin-bottom: 12px; /* Slightly reduced spacing between form groups */
+}
+
+/* Ensure modal doesn't exceed viewport */
+.modal-dialog {
+    max-width: 500px; /* Set a max-width for larger screens */
+    margin: 1.75rem auto; /* Centers the modal and gives some vertical space */
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem); /* Full width minus margins on small screens */
+    }
+}
