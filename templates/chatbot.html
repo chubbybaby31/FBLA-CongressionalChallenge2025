@@ -17,7 +17,6 @@
             addMessage(message.sender, message.text);
         });
     }
-    
     // Save chat message to session storage
     function saveChatMessage(sender, message) {
         const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
