@@ -40,8 +40,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            addMessage('AI', data.response);
-            saveChatMessage('AI', data.response); // Save AI response
+            addMessage('Budget Buddy', data.response);
+            saveChatMessage('Budget Buddy', data.response); // Save AI response
         })
         .catch((error) => {
             console.error('Error:', error);
