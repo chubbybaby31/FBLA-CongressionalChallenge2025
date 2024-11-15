@@ -6,6 +6,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import json
+import google.generativeai as genai
+
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for flashing messages
@@ -262,6 +264,23 @@ def edit_transaction(transaction_id):
     except Exception as e:
         app.logger.error(f"Error editing transaction: {str(e)}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+genai.configure(api_key='AIzaSyBzu_nG7KLLyJykyMwG3-T8xxHDJttV72o')  # Replace with your actual API key
+model = genai.GenerativeModel('gemini-pro')
+
+# ... (keep all the existing code)
+
+@app.route('/chatbot', methods=['GET', 'POST'])
+def chatbot():
+    if request.method == 'POST':
+        user_input = request.form['user_input']
+        
+        # Generate response using Gemini API
+        response = model.generate_content(user_input)
+        
+        return jsonify({'response': response.text})
+    
+    return render_template('chatbot.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
