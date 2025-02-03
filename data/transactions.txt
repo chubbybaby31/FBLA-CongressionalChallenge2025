@@ -1,6 +1,5 @@
-2024-11-16,250.0,Dog Walking,income,1
-2024-11-12,50.0,Math Tutoring,income,3
-2024-11-14,100.0,Math Tutoring,income,4
-2024-11-11,30.0,Food,expense,5
-2024-11-27,55.0,Gas,expense,6
-2024-11-19,200.0,Groceries,expense,7
+2024-11-16,100.0,dog walking,income,1
+2024-11-14,50.0,food,expense,2
+2024-11-15,23.0,groceries,expense,3
+2024-11-15,40.0,mowed the lawn,income,4
+2024-11-16,25,food,expense,5

@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
     <h1 id="current-balance">Current Balance: ${{ "%.2f"|format(balance) }}</h1>
+
+    <!-- Connect Bank Button -->
+    <button id="connect-bank" class="btn btn-success">Connect Bank</button>
+    <button id="sync-plaid-transactions" class="btn btn-info">Sync Bank Transactions</button>
+
     <h2>Recent Transactions</h2>
     <table class="table">
         <thead>
@@ -29,11 +34,11 @@
     </table>
 
     <!-- Edit Transaction Modal -->
-    <div class="modal fade" id="editTransactionModal" tabindex="-1" role="dialog" aria-labelledby="editTransactionModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editTransactionModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editTransactionModalLabel">Edit Transaction</h5>
+                    <h5 class="modal-title">Edit Transaction</h5>
                 </div>
                 <div class="modal-body">
                     <form id="editTransactionForm">
@@ -66,8 +71,59 @@
             </div>
         </div>
     </div>
+
+    <!-- Plaid Link Script -->
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Connect Bank Functionality
+            document.getElementById('connect-bank').addEventListener('click', async function() {
+                const response = await fetch('/get_link_token', { method: 'POST' });
+                const { link_token } = await response.json();
+
+                const handler = Plaid.create({
+                    token: link_token,
+                    onSuccess: async function(public_token) {
+                        await fetch('/exchange_public_token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ public_token }),
+                        });
+                        alert("Bank account connected successfully!");
+                    },
+                    onExit: function(err, metadata) {
+                        console.log("User exited Plaid Link:", err, metadata);
+                    }
+                });
+
+                handler.open();
+            });
+
+            // Sync Plaid Transactions
+            document.getElementById('sync-plaid-transactions').addEventListener('click', async function() {
+                const response = await fetch('/get_transactions', { method: 'GET' });
+                const transactions = await response.json();
+                
+
+                transactions.forEach(txn => {
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${txn.date}</td>
+                        <td>$${txn.amount.toFixed(2)}</td>
+                        <td>${txn.category || "Uncategorized"}</td>
+                        <td>Expense</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-transaction" data-id="${txn.id}">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-transaction" data-id="${txn.id}">Delete</button>
+                        </td>
+                    `;
+                    document.getElementById('transactions-table').appendChild(newRow);
+                });
+
+                alert("Plaid transactions synced successfully!");
+            });
+
             // Delete transaction functionality
             document.querySelectorAll('.delete-transaction').forEach(button => {
                 button.addEventListener('click', function() {
@@ -75,92 +131,71 @@
                     if (confirm('Are you sure you want to delete this transaction?')) {
                         fetch(`/delete_transaction/${transactionId}`, { 
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
+                            headers: { 'Content-Type': 'application/json' }
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                const row = document.getElementById(`transaction-${transactionId}`);
-                                if (row) {
-                                    row.remove();
-                                    console.log('Transaction deleted successfully');
-                                    
-                                    // Update the balance display
-                                    const balanceElement = document.getElementById('current-balance');
-                                    if (balanceElement && data.new_balance !== undefined) {
-                                        balanceElement.textContent = `Current Balance: $${data.new_balance.toFixed(2)}`;
-                                    }
-                                } else {
-                                    console.log('Transaction row not found in DOM');
-                                }
+                                document.getElementById(`transaction-${transactionId}`).remove();
+                                document.getElementById('current-balance').textContent = `Current Balance: $${data.new_balance.toFixed(2)}`;
                             } else {
-                                console.error('Server reported failure:', data.error);
-                                alert('Failed to delete transaction: ' + (data.error || 'Unknown error'));
+                                alert('Failed to delete transaction: ' + data.error);
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
                         })
                         .finally(() => {
-                            // Refresh the page to ensure consistency
                             location.reload();
                         });
                     }
                 });
             });
-        });
-        // Edit transaction functionality
-        document.querySelectorAll('.edit-transaction').forEach(button => {
-            button.addEventListener('click', function() {
-                const transactionId = this.getAttribute('data-id');
-                const row = document.getElementById(`transaction-${transactionId}`);
-                const cells = row.getElementsByTagName('td');
 
-                document.getElementById('editTransactionId').value = transactionId;
-                document.getElementById('editDate').value = cells[0].textContent;
-                document.getElementById('editAmount').value = cells[1].textContent.replace('$', '');
-                document.getElementById('editCategory').value = cells[2].textContent;
-                document.getElementById('editType').value = cells[3].textContent.toLowerCase();
+            // Edit transaction functionality
+            document.querySelectorAll('.edit-transaction').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionId = this.getAttribute('data-id');
+                    const row = document.getElementById(`transaction-${transactionId}`);
+                    const cells = row.getElementsByTagName('td');
 
-                $('#editTransactionModal').modal('show');
+                    document.getElementById('editTransactionId').value = transactionId;
+                    document.getElementById('editDate').value = cells[0].textContent;
+                    document.getElementById('editAmount').value = cells[1].textContent.replace('$', '');
+                    document.getElementById('editCategory').value = cells[2].textContent;
+                    document.getElementById('editType').value = cells[3].textContent.toLowerCase();
+
+                    $('#editTransactionModal').modal('show');
+                });
             });
-        });
 
-        document.getElementById('saveEditTransaction').addEventListener('click', function() {
-            const transactionId = document.getElementById('editTransactionId').value;
-            const editedTransaction = {
-                date: document.getElementById('editDate').value,
-                amount: parseFloat(document.getElementById('editAmount').value),
-                category: document.getElementById('editCategory').value,
-                type: document.getElementById('editType').value
-            };
+            document.getElementById('saveEditTransaction').addEventListener('click', function() {
+                const transactionId = document.getElementById('editTransactionId').value;
+                const editedTransaction = {
+                    date: document.getElementById('editDate').value,
+                    amount: parseFloat(document.getElementById('editAmount').value),
+                    category: document.getElementById('editCategory').value,
+                    type: document.getElementById('editType').value
+                };
 
-            fetch(`/edit_transaction/${transactionId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(editedTransaction)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    $('#editTransactionModal').modal('hide');
-                    location.reload(); // Reload to reflect changes
-                } else {
-                    console.error('Error editing transaction:', data.error);
-                    alert('Failed to edit transaction: ' + data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while editing the transaction. Please try again.');
+                fetch(`/edit_transaction/${transactionId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(editedTransaction)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        $('#editTransactionModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Failed to edit transaction: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             });
         });
     </script>
-
-    <!-- Add other content here -->
 {% endblock %}
