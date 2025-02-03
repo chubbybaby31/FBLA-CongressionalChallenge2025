@@ -102,7 +102,7 @@
 
             // Sync Plaid Transactions
             document.getElementById('sync-plaid-transactions').addEventListener('click', async function() {
-                const response = await fetch('/get_transactions', { method: 'GET' });
+                const response = await fetch('/api/transactions', { method: 'GET' });
                 const transactions = await response.json();
                 
 

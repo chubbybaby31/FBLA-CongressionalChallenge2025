@@ -146,19 +146,10 @@ for product in PLAID_PRODUCTS:
     products.append(Products(product))
 
 
-# We store the access_token in memory - in production, store it in a secure
-# persistent data store.
+
 access_token = None
-# The payment_id is only relevant for the UK Payment Initiation product.
-# We store the payment_id in memory - in production, store it in a secure
-# persistent data store.
 payment_id = None
-# The transfer_id is only relevant for Transfer ACH product.
-# We store the transfer_id in memory - in production, store it in a secure
-# persistent data store.
 transfer_id = None
-# We store the user_token in memory - in production, store it in a secure
-# persistent data store.
 user_token = None
 
 item_id = None
@@ -402,7 +393,7 @@ def edit_transaction(transaction_id):
        return jsonify({"success": False, "error": str(e)}), 500 
 
 # Configure Google Generative AI API key (replace with your actual API key)
-genai.configure(api_key='AIzaSyBzu_nG7KLLyJykyMwG3-T8xxHDJttV72o')
+genai.configure(api_key='AIzaSyBxRlte3PtiQNXQ6scrKG_MCf_miBr7DEs')
 model = genai.GenerativeModel('gemini-pro')
 
 def format_response(response_text):
@@ -468,6 +459,7 @@ def get_link_token():
     )
     response = client.link_token_create(request)
     return jsonify(response.to_dict())
+
 @app.route('/api/info', methods=['POST'])
 def info():
     global access_token
@@ -477,7 +469,6 @@ def info():
         'access_token': access_token,
         'products': PLAID_PRODUCTS
     })
-
 
 @app.route('/api/create_link_token_for_payment', methods=['POST'])
 def create_link_token_for_payment():
@@ -696,7 +687,7 @@ def get_transactions():
         # Return the 8 most recent transactions
         latest_transactions = sorted(added, key=lambda t: t['date'])[-8:]
 
-        
+        print(jsonify({'latest_transactions': latest_transactions}))
         return jsonify({
             'latest_transactions': latest_transactions})
 
