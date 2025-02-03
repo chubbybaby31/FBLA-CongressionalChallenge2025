@@ -104,7 +104,6 @@
             document.getElementById('sync-plaid-transactions').addEventListener('click', async function() {
                 const response = await fetch('/api/transactions', { method: 'GET' });
                 const transactions = await response.json();
-                
 
                 transactions.forEach(txn => {
                     const newRow = document.createElement('tr');
