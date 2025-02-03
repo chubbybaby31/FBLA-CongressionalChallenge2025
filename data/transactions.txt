@@ -1,3 +1,5 @@
-2024-11-23,400.0,fireeee,income,1
-2024-11-23,300.0,food,expense,2
-2024-11-14,300.0,food,income,3
+2024-11-16,100.0,dog walking,income,1
+2024-11-14,50.0,food,expense,2
+2024-11-15,23.0,groceries,expense,3
+2024-11-15,40.0,mowed the lawn,income,4
+2024-11-16,25,food,expense,5
