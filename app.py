@@ -290,8 +290,8 @@ def chatbot():
        user_input = request.form['user_input']
 
        # Get client's financial information
-       balance = read_balance() 
-       transactions = read_transactions() 
+       balance = fb.balance
+       transactions = fb.transactions
 
        df = pd.DataFrame(transactions) 
        df['date'] = pd.to_datetime(df['date']) 
