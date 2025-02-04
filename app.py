@@ -305,7 +305,7 @@ def chatbot():
        total_income = recent_df[recent_df['type'] == 'income']['value'].sum() 
        total_expenses = recent_df[recent_df['type'] == 'expense']['value'].sum() 
        
-       top_expense_categories = recent_df[recent_df['type'] == 'expense'].groupby('category')['value'].sum().nlargest(3)
+       top_expense_categories = recent_df[recent_df['type'] == 'expense'].groupby('description')['value'].sum().nlargest(3)
 
        context = f"""Current balance: **${balance:.2f}** Recent income (last 30 days): **${total_income:.2f}** Recent expenses (last 30 days): **${total_expenses:.2f}** Top 3 expense categories (last 30 days): {top_expense_categories.to_string()} Based on this information answer the following user query: {user_input}"""
 
