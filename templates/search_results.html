@@ -24,8 +24,8 @@
                 {% for transaction in transactions %}
                     <tr>
                         <td>{{ transaction.date }}</td>
-                        <td>${{ "%.2f"|format(transaction.amount) }}</td>
-                        <td>{{ transaction.category }}</td>
+                        <td>${{ "%.2f"|format(transaction.value) }}</td>
+                        <td>{{ transaction.description }}</td>
                         <td>{{ transaction.type }}</td>
                     </tr>
                 {% endfor %}

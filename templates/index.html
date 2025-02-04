@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1 id="current-balance">Current Balance: ${{ "%.2f"|format(balance) }}</h1>
+    <h1 id="current-balance">{{name}}'s Current Balance: ${{ "%.2f"|format(balance) }}</h1>
 
     <!-- Connect Bank Button -->
     <button id="connect-bank" class="btn btn-success">Connect Bank</button>
-    <button id="sync-plaid-transactions" class="btn btn-info">Sync Bank Transactions</button>
 
     <h2>Recent Transactions</h2>
     <table class="table">
@@ -21,8 +20,8 @@
             {% for transaction in transactions %}
             <tr id="transaction-{{ transaction.id }}">
                 <td>{{ transaction.date }}</td>
-                <td>${{ "%.2f"|format(transaction.amount) }}</td>
-                <td>{{ transaction.category }}</td>
+                <td>${{ "%.2f"|format(transaction.value) }}</td>
+                <td>{{ transaction.description }}</td>
                 <td>{{ transaction.type }}</td>
                 <td>
                     <button class="btn btn-sm btn-primary edit-transaction" data-id="{{ transaction.id }}">Edit</button>
@@ -100,28 +99,6 @@
                 handler.open();
             });
 
-            // Sync Plaid Transactions
-            document.getElementById('sync-plaid-transactions').addEventListener('click', async function() {
-                const response = await fetch('/api/transactions', { method: 'GET' });
-                const transactions = await response.json();
-
-                transactions.forEach(txn => {
-                    const newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>${txn.date}</td>
-                        <td>$${txn.amount.toFixed(2)}</td>
-                        <td>${txn.category || "Uncategorized"}</td>
-                        <td>Expense</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary edit-transaction" data-id="${txn.id}">Edit</button>
-                            <button class="btn btn-sm btn-danger delete-transaction" data-id="${txn.id}">Delete</button>
-                        </td>
-                    `;
-                    document.getElementById('transactions-table').appendChild(newRow);
-                });
-
-                alert("Plaid transactions synced successfully!");
-            });
 
             // Delete transaction functionality
             document.querySelectorAll('.delete-transaction').forEach(button => {
@@ -172,8 +149,8 @@
                 const transactionId = document.getElementById('editTransactionId').value;
                 const editedTransaction = {
                     date: document.getElementById('editDate').value,
-                    amount: parseFloat(document.getElementById('editAmount').value),
-                    category: document.getElementById('editCategory').value,
+                    value: parseFloat(document.getElementById('editAmount').value),
+                    description: document.getElementById('editCategory').value,
                     type: document.getElementById('editType').value
                 };
 

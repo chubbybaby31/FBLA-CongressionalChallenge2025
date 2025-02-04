@@ -72,3 +72,5 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+/cosmic-kiln-261701-firebase-adminsdk-96jan-d60de82afd.json
