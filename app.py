@@ -9,6 +9,115 @@ import json
 import google.generativeai as genai
 from firebase_integration import FBAgent
 
+import base64
+import os
+import datetime as dt
+import json
+import time
+from datetime import date, timedelta
+import uuid
+
+from dotenv import load_dotenv
+import plaid
+from plaid.model.payment_amount import PaymentAmount
+from plaid.model.payment_amount_currency import PaymentAmountCurrency
+from plaid.model.products import Products
+from plaid.model.country_code import CountryCode
+from plaid.model.recipient_bacs_nullable import RecipientBACSNullable
+from plaid.model.payment_initiation_address import PaymentInitiationAddress
+from plaid.model.payment_initiation_recipient_create_request import PaymentInitiationRecipientCreateRequest
+from plaid.model.payment_initiation_payment_create_request import PaymentInitiationPaymentCreateRequest
+from plaid.model.payment_initiation_payment_get_request import PaymentInitiationPaymentGetRequest
+from plaid.model.link_token_create_request_payment_initiation import LinkTokenCreateRequestPaymentInitiation
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.user_create_request import UserCreateRequest
+from plaid.model.consumer_report_user_identity import ConsumerReportUserIdentity
+from plaid.model.asset_report_create_request import AssetReportCreateRequest
+from plaid.model.asset_report_create_request_options import AssetReportCreateRequestOptions
+from plaid.model.asset_report_user import AssetReportUser
+from plaid.model.asset_report_get_request import AssetReportGetRequest
+from plaid.model.asset_report_pdf_get_request import AssetReportPDFGetRequest
+from plaid.model.auth_get_request import AuthGetRequest
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.identity_get_request import IdentityGetRequest
+from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
+from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
+from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
+from plaid.model.accounts_get_request import AccountsGetRequest
+from plaid.model.investments_holdings_get_request import InvestmentsHoldingsGetRequest
+from plaid.model.item_get_request import ItemGetRequest
+from plaid.model.institutions_get_by_id_request import InstitutionsGetByIdRequest
+from plaid.model.transfer_authorization_create_request import TransferAuthorizationCreateRequest
+from plaid.model.transfer_create_request import TransferCreateRequest
+from plaid.model.transfer_get_request import TransferGetRequest
+from plaid.model.transfer_network import TransferNetwork
+from plaid.model.transfer_type import TransferType
+from plaid.model.transfer_authorization_user_in_request import TransferAuthorizationUserInRequest
+from plaid.model.ach_class import ACHClass
+from plaid.model.transfer_create_idempotency_key import TransferCreateIdempotencyKey
+from plaid.model.transfer_user_address_in_request import TransferUserAddressInRequest
+from plaid.model.signal_evaluate_request import SignalEvaluateRequest
+from plaid.model.statements_list_request import StatementsListRequest
+from plaid.model.link_token_create_request_statements import LinkTokenCreateRequestStatements
+from plaid.model.link_token_create_request_cra_options import LinkTokenCreateRequestCraOptions
+from plaid.model.statements_download_request import StatementsDownloadRequest
+from plaid.model.consumer_report_permissible_purpose import ConsumerReportPermissiblePurpose
+from plaid.model.cra_check_report_base_report_get_request import CraCheckReportBaseReportGetRequest
+from plaid.model.cra_check_report_pdf_get_request import CraCheckReportPDFGetRequest
+from plaid.model.cra_check_report_income_insights_get_request import CraCheckReportIncomeInsightsGetRequest
+from plaid.model.cra_check_report_partner_insights_get_request import CraCheckReportPartnerInsightsGetRequest
+from plaid.model.cra_pdf_add_ons import CraPDFAddOns
+from plaid.api import plaid_api
+
+load_dotenv()
+
+PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID')
+PLAID_SECRET = os.getenv('PLAID_SECRET')
+PLAID_ENV = os.getenv('PLAID_ENV', 'sandbox')
+PLAID_PRODUCTS = os.getenv('PLAID_PRODUCTS', 'transactions').split(',')
+PLAID_COUNTRY_CODES = os.getenv('PLAID_COUNTRY_CODES', 'US').split(',')
+
+def empty_to_none(field):
+    value = os.getenv(field)
+    if value is None or len(value) == 0:
+        return None
+    return value
+
+host = plaid.Environment.Sandbox
+
+if PLAID_ENV == 'sandbox':
+    host = plaid.Environment.Sandbox
+
+if PLAID_ENV == 'production':
+    host = plaid.Environment.Production
+
+PLAID_REDIRECT_URI = empty_to_none('PLAID_REDIRECT_URI')
+
+configuration = plaid.Configuration(
+    host=host,
+    api_key={
+        'clientId': PLAID_CLIENT_ID,
+        'secret': PLAID_SECRET,
+        'plaidVersion': '2020-09-14'
+    }
+)
+
+api_client = plaid.ApiClient(configuration)
+client = plaid_api.PlaidApi(api_client)
+
+products = []
+for product in PLAID_PRODUCTS:
+    products.append(Products(product))
+
+access_token = None
+payment_id = None
+transfer_id = None
+user_token = None
+
+item_id = None
+
 # Initialize the Flask application
 app = Flask(__name__)
 
@@ -212,6 +321,42 @@ def chatbot():
 def instructions():
    """Render the instructions page explaining how to use the application."""
    return render_template('instructions.html')
+
+@app.route('/api/create_link_token', methods=['POST'])
+def create_link_token():
+    global user_token
+    try:
+        request = LinkTokenCreateRequest(
+            products=products,
+            client_name="Plaid Quickstart",
+            country_codes=list(map(lambda x: CountryCode(x), PLAID_COUNTRY_CODES)),
+            language='en',
+            user=LinkTokenCreateRequestUser(
+                client_user_id=str(time.time())
+            )
+        )
+        if PLAID_REDIRECT_URI!=None:
+            request['redirect_uri']=PLAID_REDIRECT_URI
+        if Products('statements') in products:
+            statements=LinkTokenCreateRequestStatements(
+                end_date=date.today(),
+                start_date=date.today()-timedelta(days=30)
+            )
+            request['statements']=statements
+
+        cra_products = ["cra_base_report", "cra_income_insights", "cra_partner_insights"]
+        if any(product in cra_products for product in PLAID_PRODUCTS):
+            request['user_token'] = user_token
+            request['consumer_report_permissible_purpose'] = ConsumerReportPermissiblePurpose('ACCOUNT_REVIEW_CREDIT')
+            request['cra_options'] = LinkTokenCreateRequestCraOptions(
+                days_requested=60
+            )
+    # create link token
+        response = client.link_token_create(request)
+        return jsonify(response.to_dict())
+    except plaid.ApiException as e:
+        print(e)
+        return json.loads(e.body)
 
 if __name__ == '__main__':
    app.run(debug=True)  # Run the Flask application in debug mode.
