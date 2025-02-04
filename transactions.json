@@ -1,0 +1,50 @@
+[
+  {
+    "date": "02-01-2025",
+    "amount": 6.33,
+    "type": "income",
+    "category": "Uber"
+  },
+  {
+    "date": "01-19-2025",
+    "amount": 5.4,
+    "type": "income",
+    "category": "Uber"
+  },
+  {
+    "date": "01-17-2025",
+    "amount": -500.0,
+    "type": "expense",
+    "category": "United Airlines"
+  },
+  {
+    "date": "01-16-2025",
+    "amount": 12.0,
+    "type": "income",
+    "category": "McDonald's"
+  },
+  {
+    "date": "01-16-2025",
+    "amount": 4.33,
+    "type": "income",
+    "category": "Starbucks"
+  },
+  {
+    "date": "01-15-2025",
+    "amount": 89.4,
+    "type": "income",
+    "category": "FUN"
+  },
+  {
+    "date": "01-19-2025",
+    "amount": 25.0,
+    "type": "income",
+    "category": null
+  },
+  {
+    "date": "01-14-2025",
+    "amount": -4.22,
+    "type": "expense",
+    "category": null
+  }
+]

@@ -78,26 +78,72 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Connect Bank Functionality
             document.getElementById('connect-bank').addEventListener('click', async function() {
-                const response = await fetch('/api/create_link_token', { method: 'POST' });
-                const { link_token } = await response.json();
+                try {
+                    const response = await fetch('/api/create_link_token', { method: 'POST' });
+                    const { link_token } = await response.json();
 
-                const handler = Plaid.create({
-                    token: link_token,
-                    onSuccess: async function(public_token) {
-                        await fetch('/exchange_public_token', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ public_token }),
-                        });
-                        alert("Bank account connected successfully!");
-                    },
-                    onExit: function(err, metadata) {
-                        console.log("User exited Plaid Link:", err, metadata);
-                    }
-                });
+                    const handler = Plaid.create({
+                        token: link_token,
+                        onSuccess: async function(public_token) {
+                            // Exchange public_token for access_token
+                            await fetch('/api/set_access_token', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ public_token }),
+                            });
 
-                handler.open();
+                            alert("Bank account connected successfully!");
+
+                            // Fetch transactions after connecting the bank
+                            fetchTransactionsAndSave();
+                        },
+                        onExit: function(err, metadata) {
+                            console.log("User exited Plaid Link:", err, metadata);
+                        }
+                    });
+
+                    handler.open();
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             });
+
+            async function fetchTransactionsAndSave() {
+                try {
+                    const response = await fetch('/api/transactions', { method: 'POST' }); // ✅ Use POST to store transactions
+                    const data = await response.json();
+
+                    if (data.transactions) {
+                        alert("Transactions have been successfully added.");
+                        updateTransactionTable(data.transactions); // ✅ Update UI dynamically
+                    } else {
+                        alert("No new transactions found.");
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function updateTransactionTable(transactions) {
+                const tableBody = document.getElementById('transactions-table');
+                tableBody.innerHTML = ''; // Clear current table
+
+                transactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.id = `transaction-${transaction.id}`;
+                    row.innerHTML = `
+                        <td>${transaction.date}</td>
+                        <td>$${transaction.value.toFixed(2)}</td>
+                        <td>${transaction.description}</td>
+                        <td>${transaction.type}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-transaction" data-id="${transaction.id}">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-transaction" data-id="${transaction.id}">Delete</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
 
 
             // Delete transaction functionality
