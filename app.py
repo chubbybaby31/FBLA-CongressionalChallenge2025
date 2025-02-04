@@ -12,10 +12,6 @@ from firebase_integration import FBAgent
 # Initialize the Flask application
 app = Flask(__name__)
 
-# File paths for balance and transactions data
-BALANCE_FILE = 'data/balance.txt'
-TRANSACTIONS_FILE = 'data/transactions.txt'
-
 global fb
 fb = None
 
