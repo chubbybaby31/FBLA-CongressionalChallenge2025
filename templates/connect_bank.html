@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Your Bank</title>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        button {
+            background-color: #333;
+            color: white;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        p {
+            margin-top: 1.5rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Next Step: Connect Your Bank</h2>
+        <button id="connect-bank">Connect Bank</button>
+        <p>Click the button above to securely connect your bank account.</p>
+    </div>
+
+    <script>
+        document.getElementById('connect-bank').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/create_link_token', { method: 'POST' });
+                const { link_token } = await response.json();
+
+                const handler = Plaid.create({
+                    token: link_token,
+                    onSuccess: async function(public_token) {
+                        await fetch('/api/set_access_token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ public_token }),
+                        });
+
+                        window.location.href = '/';
+                    },
+                    onExit: function(err, metadata) {
+                        console.log("User exited Plaid Link:", err, metadata);
+                    }
+                });
+
+                handler.open();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

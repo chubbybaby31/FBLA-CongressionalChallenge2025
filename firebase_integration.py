@@ -28,11 +28,47 @@ class FBAgent:
     
     def setUpNewUser(self, name, password):
         info = {
-            "balance": 0,
+            "balance": 1029.23,
             "email": self.email,
             "name": name,
             "password": password,
-            "transactions": -1
+            "transactions": [
+                {
+                    "date": "2025-02-03",
+                    "description": "Starbucks",
+                    "id": 1,
+                    "type": "expense",
+                    "value": 11.99
+                },
+                {
+                    "date": "2025-02-03",
+                    "description": "Walking Dogs",
+                    "id": 2,
+                    "type": "income",
+                    "value": 50
+                },
+                {
+                    "date": "2025-02-04",
+                    "description": "Work",
+                    "id": 3,
+                    "type": "income",
+                    "value": 500
+                },
+                {
+                    "date": "2025-02-05",
+                    "description": "McDonalds",
+                    "id": 4,
+                    "type": "expense",
+                    "value": 8.78
+                },
+                {
+                    "date": "2025-02-05",
+                    "description": "Work",
+                    "id": 5,
+                    "type": "income",
+                    "value": 500
+                }
+            ]
         }
         self.ref.push().set(info)
         print("pushed info")
