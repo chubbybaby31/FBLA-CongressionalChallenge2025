@@ -18,30 +18,32 @@
             </div>
         </div>
     </form>
-
-    <div class="row">
-        <div class="col-md-4">
-            <h3>Overview</h3>
-            <p>Total Income: ${{ "%.2f"|format(total_income) }}</p>
-            <p>Total Expenses: ${{ "%.2f"|format(total_expenses) }}</p>
-            <p>Net: ${{ "%.2f"|format(net) }}</p>
+    <div class="info-container">
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Overview</h3>
+                <p>Total Income: ${{ "%.2f"|format(total_income) }}</p>
+                <p>Total Expenses: ${{ "%.2f"|format(total_expenses) }}</p>
+                <p>Net: ${{ "%.2f"|format(net) }}</p>
+            </div>
+            <div class="col-md-8">
+                {% if not income_pie_data and not expenses_pie_data %}
+                    <div class="alert alert-info">No transactions found for the selected date range.</div>
+                {% endif %}
+            </div>
         </div>
-        <div class="col-md-8">
-            {% if not income_pie_data and not expenses_pie_data %}
-                <div class="alert alert-info">No transactions found for the selected date range.</div>
-            {% endif %}
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>Income Breakdown</h3>
+                <div id="income-pie" class="chart-container"></div>
+            </div>
+            <div class="col-md-6">
+                <h3>Expense Breakdown</h3>
+                <div id="expenses-pie" class="chart-container"></div>
+            </div>
         </div>
     </div>
-    
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div id="income-pie"></div>
-        </div>
-        <div class="col-md-6">
-            <div id="expenses-pie"></div>
-        </div>
-    </div>
-
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
         // Safely parse JSON or return null if invalid
@@ -57,25 +59,70 @@
         // Raw data from server
         var rawIncomePieData = '{{ income_pie_data | safe }}';
         var rawExpensesPieData = '{{ expenses_pie_data | safe }}';
+        var rawNetBalanceData = '{{ net_balance_data | safe }}';
+        var netBalanceData = safeJSONParse(rawNetBalanceData);
 
         // Parse the data
         var incomePieData = safeJSONParse(rawIncomePieData);
         var expensesPieData = safeJSONParse(rawExpensesPieData);
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Render Income Pie Chart
-            if (incomePieData && incomePieData.data && incomePieData.data[0]) {
-                Plotly.newPlot('income-pie', incomePieData.data, incomePieData.layout || {});
-            } else {
-                console.log('No income data available for pie chart');
+            const chartConfig = {
+                responsive: true,
+                displayModeBar: false,
+                backgroundColor: [
+                            '#004808',   // Deep forest green (starting point)
+                            '#006B0C',   // Slightly lighter green
+                            '#008C10',   // Brighter green
+                            '#00B015',   // Vibrant green
+                            '#00D41A',   // Bright lime green
+                            '#2EFF4D',   // Neon green
+                            '#5AFF78',   // Soft mint green
+                            '#85FF9D',   // Pale mint green
+                            '#B0FFc2',   // Very light mint
+                            '#DBFFDF'    // Extremely light mint
+                        ]
+            };
+
+            const layoutConfig = {
+                font: {
+                    family: "'Poppins', sans-serif",
+                    color: '#333'
+                },
+                showlegend: false,
+                margin: {
+                    l: 0,
+                    r: 0,
+                    t: 0,
+                    b: 0
+                },
+                height: 300,
+                width: 300,
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            function renderChart(elementId, pieData, title) {
+                if (pieData && pieData.data && pieData.data[0]) {
+                    const data = pieData.data[0];
+                    data.hole = 0.4;
+                    data.textinfo = 'label+percent';
+                    data.insidetextorientation = 'radial';
+
+                    const layout = {
+                        ...layoutConfig,
+                    };
+
+                    Plotly.newPlot(elementId, [data], layout, chartConfig);
+                } else {
+                    console.log(`No data available for ${title}`);
+                    document.getElementById(elementId).innerHTML = `<p class="text-center">No data available for ${title}</p>`;
+                }
             }
 
-            // Render Expenses Pie Chart
-            if (expensesPieData && expensesPieData.data && expensesPieData.data[0]) {
-                Plotly.newPlot('expenses-pie', expensesPieData.data, expensesPieData.layout || {});
-            } else {
-                console.log('No expenses data available for pie chart');
-            }
+            
+            renderChart('income-pie', incomePieData, 'Income Breakdown');
+            renderChart('expenses-pie', expensesPieData, 'Expenses Breakdown');
         });
     </script>
 {% endblock %}

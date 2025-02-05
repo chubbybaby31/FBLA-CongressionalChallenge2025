@@ -191,6 +191,8 @@ def summary():
                 title='Expenses by Category'
             )
             expenses_pie_data = expenses_pie.to_json()
+
+        
         
         return render_template('summary.html', total_income=total_income,
                                total_expenses=total_expenses,
@@ -201,6 +203,50 @@ def summary():
                                end_date=end_date.strftime('%Y-%m-%d'),
                                transactions=transactions)
     
+    # Convert start_date and end_date to datetime objects if they're not already
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+
+    # Get all transactions and convert to DataFrame if it's not already
+    transactions_df = pd.DataFrame(fb.transactions)
+
+    # Convert the date column to datetime
+    transactions_df['date'] = pd.to_datetime(transactions_df['date'])
+
+    # Filter transactions within the date range
+    filtered_df = transactions_df[(transactions_df['date'] >= start_date) & (transactions_df['date'] <= end_date)]
+
+    # Sort transactions by date
+    filtered_df = filtered_df.sort_values('date')
+
+    # Initialize the balance data
+    balance_data = []
+    current_balance = fb.balance
+
+    # Generate daily balance data
+    current_date = start_date
+    while current_date <= end_date:
+        # Filter transactions for the current date
+        daily_transactions = filtered_df[filtered_df['date'].dt.date == current_date.date()]
+
+        # Update balance based on daily transactions
+        for _, transaction in daily_transactions.iterrows():
+            if transaction['type'] == 'income':
+                current_balance -= transaction['value']
+            else:
+                current_balance += transaction['value']   
+
+        # Append the balance for the current date
+        balance_data.append({
+            'date': current_date.strftime('%Y-%m-%d'),
+            'balance': round(current_balance, 2)
+        })
+
+        # Move to the next day
+        current_date += timedelta(days=1)
+
+    return balance_data
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     """Search for transactions based on a keyword."""

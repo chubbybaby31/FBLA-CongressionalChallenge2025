@@ -404,3 +404,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 #filter-button {
     margin-top: 1%;
 }
+
+.chart-container {
+    height: 400px;
+    margin-bottom: 30px;
+}
+
+.info-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.row.mt-4 {
+    display: flex;
+    justify-content: space-between;
+    gap: 100px;
+    text-align: center;
+    margin-right: 100px;
+    font-size: 20px;
+}
+
+.col-md-4 {
+    font-size: 25px;
+}
