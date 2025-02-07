@@ -16,7 +16,7 @@ body {
 
 /* Header styles with new gradient */
 header {
-    background: #000; /* Light Forest Green gradient */
+    background: #00925f; /* Light Forest Green gradient */
     color: white;
     padding: 20px 0;
     text-align: center;
@@ -30,7 +30,7 @@ header h1 {
 
 /* Navbar styles */
 .navbar {
-    background: #000; /* Light Forest Green gradient */
+    background: #00925f; /* Light Forest Green gradient */
     padding: 15px 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -128,7 +128,7 @@ button {
 }
 
 button:hover {
-   background-color: #004808; /* Darker shade of forest green on hover */
+   background-color: #00925f; /* Darker shade of forest green on hover */
 }
 
 /* Table styles */
@@ -166,7 +166,7 @@ tr:hover {
    text-align:center ; 
    margin-top :30px ; 
    padding :20px ; 
-   background: linear-gradient(135deg,#000,#004808) ; /* Light Forest Green gradient */ 
+   background: linear-gradient(135deg,#00925f,#00925f) ; /* Light Forest Green gradient */ 
    border-radius :15px ; 
 }
 
