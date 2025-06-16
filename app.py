@@ -160,6 +160,7 @@ def summary():
     df['date'] = pd.to_datetime(df['date'])  # Convert date column to datetime
     
     filtered_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]  # Filter transactions
+    print(df)
     
     # Calculate summaries for total income and expenses within the filtered date range
     total_income = filtered_df[filtered_df['type'] == 'income']['value'].sum()
@@ -244,7 +245,7 @@ def summary():
 
         # Move to the next day
         current_date += timedelta(days=1)
-
+    print("HELLOOOO")
     return balance_data
 
 @app.route('/search', methods=['GET', 'POST'])
