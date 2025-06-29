@@ -11,7 +11,12 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="{{ url_for('home') }}">CLEAR CA$H</a>
+            <div class="real-nav-bar-shiz">
+                <a class="navbar-brand" href="{{ url_for('home') }}">CLEAR CA$H</a>
+                <div class="logout-button">
+                    <a class="navbar-logout" href="{{ url_for('login') }}">Log Out</a>
+                </div>
+            </div>
             <div class="navbar-nav">
                 <a class="nav-item nav-link" href="{{ url_for('home') }}">Home</a>
                 <a class="nav-item nav-link" href="{{ url_for('add_transaction') }}">Add Transaction</a>
