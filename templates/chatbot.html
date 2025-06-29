@@ -3,6 +3,7 @@
 {% block content %}
 <div id="chat-container">
     <div id="chat-messages"></div>
+    <div id="typing-indicator" style="display: none;"><em>Budget Buddy is typing...</em></div>
     <form id="chat-form" autocomplete="off">
         <input type="text" id="user-input" placeholder="Type your message here..." required aria-label="Chat input">
         <button type="submit">Send</button>
@@ -10,22 +11,27 @@
 </div>
 
 <script>
-    function loadChatHistory() {
-        const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
-        chatMessages.forEach(msg => addMessage(msg.sender, msg.text));
+    function formatTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    function saveChatMessage(sender, message) {
+    function loadChatHistory() {
+        const chatMessages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
+        chatMessages.forEach(msg => addMessage(msg.sender, msg.text, msg.time));
+    }
+
+    function saveChatMessage(sender, message, time) {
         const messages = JSON.parse(sessionStorage.getItem('chatMessages')) || [];
-        messages.push({ sender, text: message });
+        messages.push({ sender, text: message, time });
         sessionStorage.setItem('chatMessages', JSON.stringify(messages));
     }
 
-    function addMessage(sender, message) {
+    function addMessage(sender, message, time = formatTimestamp()) {
         const chat = document.getElementById('chat-messages');
         const msg = document.createElement('div');
         msg.classList.add('message', sender === 'You' ? 'user' : 'bot');
-        msg.innerHTML = `<div class="sender">${sender}:</div><div class="text">${message}</div>`;
+        msg.innerHTML = `<div class="sender">${sender} <span class="timestamp">${time}</span></div><div class="text">${message}</div>`;
         chat.appendChild(msg);
         chat.scrollTop = chat.scrollHeight;
     }
@@ -36,9 +42,14 @@
         const text = input.value.trim();
         if (!text) return;
 
-        addMessage('You', text);
-        saveChatMessage('You', text);
+        const timestamp = formatTimestamp();
+        addMessage('You', text, timestamp);
+        saveChatMessage('You', text, timestamp);
         input.value = '';
+
+        // Show typing indicator
+        const typingEl = document.getElementById('typing-indicator');
+        typingEl.style.display = 'block';
 
         fetch('/chatbot', {
             method: 'POST',
@@ -47,22 +58,24 @@
         })
         .then(res => res.json())
         .then(data => {
-            addMessage('Budget Buddy', data.response);
-            saveChatMessage('Budget Buddy', data.response);
+            const botTime = formatTimestamp();
+            addMessage('Budget Buddy', data.response, botTime);
+            saveChatMessage('Budget Buddy', data.response, botTime);
         })
         .catch(err => {
             addMessage('Budget Buddy', 'Sorry, something went wrong.');
             console.error(err);
+        })
+        .finally(() => {
+            typingEl.style.display = 'none';
         });
     });
 
-    // Autofocus on input
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('user-input').focus();
         loadChatHistory();
     });
 
-    // Support Enter key without shift
     document.getElementById('user-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -120,7 +133,14 @@
 
 .sender {
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
+}
+
+.timestamp {
+    font-size: 0.75em;
+    color: #666;
+    margin-left: 8px;
+    font-weight: normal;
 }
 
 #chat-form {
@@ -156,7 +176,16 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #016a45;
+}
+
+#typing-indicator {
+    padding: 10px 20px;
+    font-style: italic;
+    font-size: 0.9em;
+    color: #555;
+    background-color: #f1f1f1;
+    border-top: 1px dashed #ccc;
 }
 </style>
 {% endblock %}
