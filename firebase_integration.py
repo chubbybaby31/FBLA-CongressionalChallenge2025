@@ -28,46 +28,31 @@ class FBAgent:
     
     def setUpNewUser(self, name, password):
         info = {
-            "balance": 1029.23,
+            "balance": 1871.20,
             "email": self.email,
             "name": name,
             "password": password,
             "transactions": [
-                {
-                    "date": "2025-06-03",
-                    "description": "Starbucks",
-                    "id": 1,
-                    "type": "expense",
-                    "value": 11.99
-                },
-                {
-                    "date": "2025-06-03",
-                    "description": "Walking Dogs",
-                    "id": 2,
-                    "type": "income",
-                    "value": 50
-                },
-                {
-                    "date": "2025-06-04",
-                    "description": "Work",
-                    "id": 3,
-                    "type": "income",
-                    "value": 500
-                },
-                {
-                    "date": "2025-06-05",
-                    "description": "McDonalds",
-                    "id": 4,
-                    "type": "expense",
-                    "value": 8.78
-                },
-                {
-                    "date": "2025-06-05",
-                    "description": "Work",
-                    "id": 5,
-                    "type": "income",
-                    "value": 500
-                }
+                {"date": "2025-06-03", "description": "Starbucks", "id": 1, "type": "expense", "value": 11.99},
+                {"date": "2025-06-03", "description": "Walking Dogs", "id": 2, "type": "income", "value": 50},
+                {"date": "2025-06-04", "description": "Work", "id": 3, "type": "income", "value": 500},
+                {"date": "2025-06-05", "description": "McDonalds", "id": 4, "type": "expense", "value": 8.78},
+                {"date": "2025-06-05", "description": "Work", "id": 5, "type": "income", "value": 500},
+                {"date": "2025-06-06", "description": "Spotify Subscription", "id": 6, "type": "expense", "value": 9.99},
+                {"date": "2025-06-06", "description": "Freelance Project", "id": 7, "type": "income", "value": 320},
+                {"date": "2025-06-07", "description": "Groceries", "id": 8, "type": "expense", "value": 76.25},
+                {"date": "2025-06-07", "description": "Gift from Aunt", "id": 9, "type": "income", "value": 100},
+                {"date": "2025-06-08", "description": "Electric Bill", "id": 10, "type": "expense", "value": 45.00},
+                {"date": "2025-06-08", "description": "Internet Reimbursement", "id": 11, "type": "income", "value": 60},
+                {"date": "2025-06-09", "description": "Movie Night", "id": 12, "type": "expense", "value": 17.50},
+                {"date": "2025-06-09", "description": "Selling Old Textbooks", "id": 13, "type": "income", "value": 40},
+                {"date": "2025-06-10", "description": "Lunch - Chipotle", "id": 14, "type": "expense", "value": 12.60},
+                {"date": "2025-06-10", "description": "Pet Sitting", "id": 15, "type": "income", "value": 75},
+                {"date": "2025-06-11", "description": "Uber Ride", "id": 16, "type": "expense", "value": 22.40},
+                {"date": "2025-06-11", "description": "Cashback Bonus", "id": 17, "type": "income", "value": 15},
+                {"date": "2025-06-12", "description": "Amazon Purchase", "id": 18, "type": "expense", "value": 58.99},
+                {"date": "2025-06-12", "description": "Work", "id": 19, "type": "income", "value": 500},
+                {"date": "2025-06-13", "description": "Dinner - Thai Place", "id": 20, "type": "expense", "value": 25.30}
             ]
         }
         self.ref.push().set(info)

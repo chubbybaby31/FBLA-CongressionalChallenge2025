@@ -435,20 +435,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin-bottom: 30px;
 }
 
-.info-container {
-    display: flex;
-    justify-content: space-between;
-}
-
 .row.mt-4 {
     display: flex;
-    justify-content: space-between;
-    gap: 100px;
+    justify-content: space-evenly;
     text-align: center;
-    margin-right: 100px;
     font-size: 20px;
+    margin-left: -100px;
 }
 
 .col-md-4 {
     font-size: 25px;
+    display: flex;
+    justify-content: space-evenly;
 }
