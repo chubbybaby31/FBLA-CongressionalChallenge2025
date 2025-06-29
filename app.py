@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import json
-import google.generativeai as genai
+from google import genai
 from firebase_integration import FBAgent
 
 import json
@@ -274,8 +274,10 @@ def edit_transaction(transaction_id):
 
 
 # Configure Google Generative AI API key (replace with your actual API key)
-genai.configure(api_key='AIzaSyBxRlte3PtiQNXQ6scrKG_MCf_miBr7DEs')
-model = genai.GenerativeModel('gemini-pro')
+# genai.configure(api_key='AIzaSyBxRlte3PtiQNXQ6scrKG_MCf_miBr7DEs')
+# model = genai.GenerativeModel('gemini-pro')
+
+client = genai.Client(api_key="AIzaSyBxRlte3PtiQNXQ6scrKG_MCf_miBr7DEs")
 
 def format_response(response_text):
    """Format response text from AI model."""
@@ -315,7 +317,12 @@ def chatbot():
 
        context = f"""Current balance: **${balance:.2f}** Recent income (last 30 days): **${total_income:.2f}** Recent expenses (last 30 days): **${total_expenses:.2f}** Top 3 expense categories (last 30 days): {top_expense_categories.to_string()} Based on this information answer the following user query: {user_input}"""
 
-       response = model.generate_content(context) 
+       response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=context,
+        )
+       
+    #    response = model.generate_content(context) 
 
        formatted_response = format_response(response.text) 
 
