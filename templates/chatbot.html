@@ -187,5 +187,39 @@ button:hover {
     background-color: #f1f1f1;
     border-top: 1px dashed #ccc;
 }
+
+#typing-indicator {
+    padding: 10px 20px;
+    font-style: italic;
+    font-size: 0.9em;
+    color: #555;
+    background-color: #f1f1f1;
+    border-top: 1px dashed #ccc;
+}
+
+#typing-indicator .dot-1,
+#typing-indicator .dot-2,
+#typing-indicator .dot-3 {
+    animation-name: blink;
+    animation-duration: 1.4s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+}
+
+#typing-indicator .dot-1 {
+    animation-delay: 0s;
+}
+#typing-indicator .dot-2 {
+    animation-delay: 0.2s;
+}
+#typing-indicator .dot-3 {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
 </style>
 {% endblock %}
